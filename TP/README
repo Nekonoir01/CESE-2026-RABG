@@ -1,1 +1,105 @@
+Sistema de Medición de Temperatura con STM32
 
+Descripción
+Este proyecto implementa un sistema embebido basado en STM32 que permite la medición de temperatura utilizando un sensor AHT10 y la visualización del valor en un display LCD con interfaz I2C.
+El diseño sigue una arquitectura modular con separación en capas, implementando un driver desacoplado del hardware mediante una capa de abstracción (`port.c`), cumpliendo con los lineamientos de la materia **Protocolos de Comunicación en Sistemas Embebidos (PCSE)**.
+
+Hardware utilizado
+
+* Placa STM32 (NUCLEO / STM32F4)
+* Sensor AHT10 (I2C)
+* Display LCD 16x2 con interfaz I2C (PCF8574)
+
+ Protocolo de comunicación
+
+Se utiliza el protocolo I2C para la comunicación con los periféricos.
+El sistema emplea un **bus compartido**, donde múltiples dispositivos están conectados en paralelo a las mismas líneas:
+
+* SDA (datos)
+* SCL (reloj)
+
+Cada dispositivo se identifica mediante una dirección única:
+
+* AHT10 → `0x38`
+* LCD (PCF8574) → `0x27`
+
+Esto permite utilizar un único bus para múltiples dispositivos, simplificando el cableado.
+
+Arquitectura del sistema
+El sistema está dividido en tres capas principales:
+
+Aplicación
+* `main.c`
+* Máquina de estados (FSM)
+
+Responsable de:
+* Lectura periódica del sensor
+* Procesamiento de datos
+* Actualización del display
+
+Drivers
+
+* `AHT10.c / AHT10.h`
+* `LCDi2c.c / LCDi2c.h`
+
+Implementan la lógica de comunicación con los periféricos sin depender directamente del hardware.
+
+Capa de abstracción de hardware (PORT)
+
+* `port.c / port.h`
+
+Encapsula las funciones del HAL:
+```
+I2C_Write()
+I2C_Read()
+I2C_IsDeviceReady()
+PORT_delay()
+```
+Permite que los drivers sean reutilizables en otras plataformas.
+
+Máquina de Estados (FSM)
+
+El sistema utiliza una FSM no bloqueante con los siguientes estados:
+
+* INITIALIZATION
+* verify_sensors
+* Read_start
+* Read_wait
+* process_data
+* update_display
+* STATE_ERRORI2C
+
+## Funcionalidad
+
+* Lectura de temperatura desde el sensor AHT10
+* Conversión de datos a formato legible
+* Visualización en LCD (línea 1)
+* Actualización periódica sin bloqueo usando `HAL_GetTick()`
+
+##  Estructura del proyecto
+
+/Core
+/Drivers
+  /API
+    /Inc
+      AHT10.h
+      LCDi2c.h
+      port.h
+      fsm.h
+    /Src
+      AHT10.c
+      LCDi2c.c
+      port.c
+README.md
+
+##  Cómo usar
+
+1. Configurar el periférico I2C en STM32CubeMX
+2. Conectar:
+   * AHT10 al bus I2C
+   * LCD al mismo bus I2C
+3. Compilar y cargar el firmware
+4. Visualizar la temperatura en el LCD
+
+
+Ing Rodrigo Antonio Berrezueta Guerrero
