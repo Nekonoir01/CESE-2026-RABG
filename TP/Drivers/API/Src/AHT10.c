@@ -37,7 +37,8 @@ uint8_t AHT10_LeerDatos(I2C_HandleTypeDef *hi2c, AHT10_Data_t *data)
         return 0;
 
     PORT_delay(75); // Tiempo de medición dado por el fabricante para completar la medicion interna   
-                    // Para tiempos menores puede generar lecturas incompletas.
+    // PORT_delay(10); Para tiempos menores puede generar lecturas incompletas.
+    
     if (I2C_Read(hi2c, AHT10_I2C_ADDRESS, buffer, 6) != HAL_OK)
         return 0;
 
